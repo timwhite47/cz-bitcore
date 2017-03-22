@@ -1,6 +1,7 @@
 import { inherits } from 'util';
-
+import { Transaction } from 'bitcore-lib';
 import { EventEmitter } from 'events';
+const NETWORK = 'testnet';
 
 function WatchtowerService(options) {
   EventEmitter.call(this);
@@ -11,11 +12,19 @@ inherits(WatchtowerService, EventEmitter);
 
 WatchtowerService.dependencies = ['bitcoind'];
 
+WatchtowerService.prototype.onTx = function (txHex) {
+  tx = new Transaction(txHex);
+  addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
+
+  console.log('GOT TX', {
+    hash: tx.hash,
+    outAddrs: addresses,
+  });
+};
+
 WatchtowerService.prototype.start = function(callback) {
   this.bus.subscribe('bitcoind/rawtransaction');
-  this.bus.on('bitcoind/rawtransaction', (transactionHex) => {
-    console.log('GOT RAW TX', transactionHex);
-  });
+  this.bus.on('bitcoind/rawtransaction', (hex) => this.onTx(hex));
 
   console.log('starting service');
   setImmediate(callback);

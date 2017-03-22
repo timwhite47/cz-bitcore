@@ -13,5 +13,8 @@
   "devDependencies": {
     "babel-core": "^6.24.0",
     "babel-preset-es2015": "^6.24.0"
+  },
+  "dependencies": {
+    "bitcore-lib": "^0.14.0"
   }
 }
