@@ -1,7 +1,8 @@
 import { inherits } from 'util';
-import { Transaction } from 'bitcore-lib';
 import { EventEmitter } from 'events';
+const bitcore = global._bitcore;
 const NETWORK = 'testnet';
+const { Transaction } = bitcore;
 
 function WatchtowerService(options) {
   EventEmitter.call(this);
