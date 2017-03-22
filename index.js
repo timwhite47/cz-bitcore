@@ -2,11 +2,12 @@
 
 var _util = require('util');
 
-var _bitcoreLib = require('bitcore-lib');
-
 var _events = require('events');
 
+var bitcore = global._bitcore;
 var NETWORK = 'testnet';
+var Transaction = bitcore.Transaction;
+
 
 function WatchtowerService(options) {
   _events.EventEmitter.call(this);
@@ -18,7 +19,7 @@ function WatchtowerService(options) {
 WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.onTx = function (txHex) {
-  tx = new _bitcoreLib.Transaction(txHex);
+  tx = new Transaction(txHex);
   addresses = tx.outputs.map(function (_ref) {
     var script = _ref.script;
     return script.toAddress(NETWORK);
