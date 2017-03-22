@@ -13,7 +13,7 @@ WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.start = function(callback) {
   this.bus.subscribe('bitcoind/rawtransaction');
-  bus.on('bitcoind/rawtransaction', (transactionHex) => {
+  this.bus.on('bitcoind/rawtransaction', (transactionHex) => {
     console.log('GOT RAW TX', transactionHex);
   });
 
