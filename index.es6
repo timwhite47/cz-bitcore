@@ -31,7 +31,7 @@ WatchtowerService.prototype.getAPIMethods = function() {
   return [];
 };
 
-Service.prototype.getRoutePrefix = function() {
+WatchtowerService.prototype.getRoutePrefix = function() {
   return 'watchtower';
 };
 
