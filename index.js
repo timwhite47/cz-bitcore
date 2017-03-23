@@ -19,6 +19,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var MONITOR_ADDRESS_KEY = 'monitored_addresses';
 var NETWORK = 'testnet';
 var redis = require('redis');
+
 _bluebird2.default.promisifyAll(redis.RedisClient.prototype);
 
 function WatchtowerService(options) {
@@ -39,7 +40,10 @@ WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.updatePayment = function (address) {
   console.log('Enqueuing Payment Update', address);
-  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()]);
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
+    retry: true,
+    queue: 'critical'
+  });
 };
 
 WatchtowerService.prototype.onTx = function (txHex) {

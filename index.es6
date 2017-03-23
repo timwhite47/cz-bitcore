@@ -6,6 +6,7 @@ import Promise from 'bluebird';
 const MONITOR_ADDRESS_KEY = 'monitored_addresses';
 const NETWORK = 'testnet';
 const redis = require('redis');
+
 Promise.promisifyAll(redis.RedisClient.prototype);
 
 function WatchtowerService(options) {
@@ -26,7 +27,10 @@ WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.updatePayment = function (address) {
   console.log('Enqueuing Payment Update', address);
-  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()]);
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
+    retry: true,
+    queue: 'critical',
+  });
 };
 
 WatchtowerService.prototype.onTx = function (txHex) {
