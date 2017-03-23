@@ -20,7 +20,7 @@ inherits(WatchtowerService, EventEmitter);
 WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.onTx = function (txHex) {
-  tx = new Transaction(txHex);
+  const tx = new Transaction(txHex);
   addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
 
   Promise
