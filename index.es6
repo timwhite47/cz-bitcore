@@ -21,20 +21,20 @@ WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.onTx = function (txHex) {
   const tx = new Transaction(txHex);
-  addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
+  const addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
 
   Promise
-    .filter((address) => this.isMonitoredAddress(address))
+    .filter(addresses, (address) => this.isMonitoredAddress(address))
     .each((address) => {
       console.log('GOT TX', {
         hash: tx.hash,
-        outAddrs: addresses,
+        outAddrs: address,
       });
     });
 };
 
 WatchtowerService.prototype.isMonitoredAddress = function (address) {
-  return redisClient
+  return this.redisClient
     .sismemberAsync(MONITOR_ADDRESS_KEY, address.toString())
     .then((result) => Boolean(result));
 };
