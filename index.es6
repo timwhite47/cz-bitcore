@@ -13,6 +13,7 @@ function WatchtowerService(options) {
   this.bus = this.node.openBus();
   this.redisClient = redis.createClient({
     host: 'redis',
+    db: 1,
   });
 }
 inherits(WatchtowerService, EventEmitter);
