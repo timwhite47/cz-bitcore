@@ -32,24 +32,24 @@ WatchtowerService.dependencies = ['bitcoind'];
 WatchtowerService.prototype.onTx = function (txHex) {
   var _this = this;
 
-  tx = new _bitcoreLib.Transaction(txHex);
-  addresses = tx.outputs.map(function (_ref) {
+  var tx = new _bitcoreLib.Transaction(txHex);
+  var addresses = tx.outputs.map(function (_ref) {
     var script = _ref.script;
     return script.toAddress(NETWORK);
   });
 
-  _bluebird2.default.filter(function (address) {
+  _bluebird2.default.filter(addresses, function (address) {
     return _this.isMonitoredAddress(address);
   }).each(function (address) {
     console.log('GOT TX', {
       hash: tx.hash,
-      outAddrs: addresses
+      outAddrs: address
     });
   });
 };
 
 WatchtowerService.prototype.isMonitoredAddress = function (address) {
-  return redisClient.sismemberAsync(MONITOR_ADDRESS_KEY, address.toString()).then(function (result) {
+  return this.redisClient.sismemberAsync(MONITOR_ADDRESS_KEY, address.toString()).then(function (result) {
     return Boolean(result);
   });
 };
