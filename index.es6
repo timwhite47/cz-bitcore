@@ -1,12 +1,19 @@
 import { inherits } from 'util';
 import { Transaction } from 'bitcore-lib';
 import { EventEmitter } from 'events';
+import Promise from 'bluebird';
+const MONITOR_ADDRESS_KEY = 'monitored_addresses';
 const NETWORK = 'testnet';
+const redis = require('redis');
+Promise.promisifyAll(redis.RedisClient.prototype);
 
 function WatchtowerService(options) {
   EventEmitter.call(this);
   this.node = options.node;
   this.bus = this.node.openBus();
+  this.redisClient = redis.createClient({
+    host: 'redis',
+  });
 }
 inherits(WatchtowerService, EventEmitter);
 
@@ -16,16 +23,25 @@ WatchtowerService.prototype.onTx = function (txHex) {
   tx = new Transaction(txHex);
   addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
 
-  console.log('GOT TX', {
-    hash: tx.hash,
-    outAddrs: addresses,
-  });
+  Promise
+    .filter((address) => this.isMonitoredAddress(address))
+    .each((address) => {
+      console.log('GOT TX', {
+        hash: tx.hash,
+        outAddrs: addresses,
+      });
+    });
+};
+
+WatchtowerService.prototype.isMonitoredAddress = function (address) {
+  return redisClient
+    .sismemberAsync(MONITOR_ADDRESS_KEY, address.toString())
+    .then((result) => Boolean(result));
 };
 
 WatchtowerService.prototype.start = function(callback) {
   this.bus.subscribe('bitcoind/rawtransaction');
   this.bus.on('bitcoind/rawtransaction', (hex) => this.onTx(hex));
-
   console.log('starting service');
   setImmediate(callback);
 };

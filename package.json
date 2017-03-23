@@ -11,7 +11,9 @@
   "author": "Tim White <tim@timwhite.ninja>",
   "license": "ISC",
   "dependencies": {
-    "bitcore-lib": "https://github.com/timwhite47/bitcore-lib.git"
+    "bitcore-lib": "https://github.com/timwhite47/bitcore-lib.git",
+    "bluebird": "^3.5.0",
+    "redis": "^2.7.1"
   },
   "devDependencies": {
     "babel-core": "^6.24.0",
