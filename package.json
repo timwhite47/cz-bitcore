@@ -13,7 +13,8 @@
   "dependencies": {
     "bitcore-lib": "https://github.com/timwhite47/bitcore-lib.git",
     "bluebird": "^3.5.0",
-    "redis": "^2.7.1"
+    "redis": "^2.7.1",
+    "sidekiq": "^1.1.1"
   },
   "devDependencies": {
     "babel-core": "^6.24.0",

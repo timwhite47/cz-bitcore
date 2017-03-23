@@ -6,6 +6,10 @@ var _bitcoreLib = require('bitcore-lib');
 
 var _events = require('events');
 
+var _sidekiq = require('sidekiq');
+
+var _sidekiq2 = _interopRequireDefault(_sidekiq);
+
 var _bluebird = require('bluebird');
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
@@ -21,13 +25,23 @@ function WatchtowerService(options) {
   _events.EventEmitter.call(this);
   this.node = options.node;
   this.bus = this.node.openBus();
+
   this.redisClient = redis.createClient({
-    host: 'redis'
+    host: 'redis',
+    db: 1
   });
+
+  this.sidekiq = new _sidekiq2.default(this.redisClient, process.env.NODE_ENV);
 }
 (0, _util.inherits)(WatchtowerService, _events.EventEmitter);
 
 WatchtowerService.dependencies = ['bitcoind'];
+
+WatchtowerService.prototype.updatePayment = function (address) {
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
+    queue: 'critical'
+  });
+};
 
 WatchtowerService.prototype.onTx = function (txHex) {
   var _this = this;
@@ -41,10 +55,7 @@ WatchtowerService.prototype.onTx = function (txHex) {
   _bluebird2.default.filter(addresses, function (address) {
     return _this.isMonitoredAddress(address);
   }).each(function (address) {
-    console.log('GOT TX', {
-      hash: tx.hash,
-      outAddrs: address
-    });
+    return _this.updatePayment(address);
   });
 };
 

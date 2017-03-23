@@ -1,6 +1,7 @@
 import { inherits } from 'util';
 import { Transaction } from 'bitcore-lib';
 import { EventEmitter } from 'events';
+import Sidekiq from 'sidekiq';
 import Promise from 'bluebird';
 const MONITOR_ADDRESS_KEY = 'monitored_addresses';
 const NETWORK = 'testnet';
@@ -11,14 +12,23 @@ function WatchtowerService(options) {
   EventEmitter.call(this);
   this.node = options.node;
   this.bus = this.node.openBus();
+
   this.redisClient = redis.createClient({
     host: 'redis',
     db: 1,
   });
+
+  this.sidekiq = new Sidekiq(this.redisClient, process.env.NODE_ENV);
 }
 inherits(WatchtowerService, EventEmitter);
 
 WatchtowerService.dependencies = ['bitcoind'];
+
+WatchtowerService.prototype.updatePayment = function (address) {
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
+    queue: 'critical',
+  });
+};
 
 WatchtowerService.prototype.onTx = function (txHex) {
   const tx = new Transaction(txHex);
@@ -26,12 +36,7 @@ WatchtowerService.prototype.onTx = function (txHex) {
 
   Promise
     .filter(addresses, (address) => this.isMonitoredAddress(address))
-    .each((address) => {
-      console.log('GOT TX', {
-        hash: tx.hash,
-        outAddrs: address,
-      });
-    });
+    .each((address) => this.updatePayment(address));
 };
 
 WatchtowerService.prototype.isMonitoredAddress = function (address) {
