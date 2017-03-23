@@ -25,14 +25,15 @@ inherits(WatchtowerService, EventEmitter);
 WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.updatePayment = function (address) {
-  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
-    queue: 'critical',
-  });
+  console.log('Enqueuing Payment Update', address);
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()]);
 };
 
 WatchtowerService.prototype.onTx = function (txHex) {
   const tx = new Transaction(txHex);
   const addresses = tx.outputs.map(({ script }) => script.toAddress(NETWORK));
+
+  console.log('Got TX', tx);
 
   Promise
     .filter(addresses, (address) => this.isMonitoredAddress(address))
