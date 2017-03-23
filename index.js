@@ -38,9 +38,8 @@ function WatchtowerService(options) {
 WatchtowerService.dependencies = ['bitcoind'];
 
 WatchtowerService.prototype.updatePayment = function (address) {
-  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()], {
-    queue: 'critical'
-  });
+  console.log('Enqueuing Payment Update', address);
+  this.sidekiq.enqueue('UpdatePaymentWorker', [address.toString()]);
 };
 
 WatchtowerService.prototype.onTx = function (txHex) {
@@ -51,6 +50,8 @@ WatchtowerService.prototype.onTx = function (txHex) {
     var script = _ref.script;
     return script.toAddress(NETWORK);
   });
+
+  console.log('Got TX', tx);
 
   _bluebird2.default.filter(addresses, function (address) {
     return _this.isMonitoredAddress(address);
